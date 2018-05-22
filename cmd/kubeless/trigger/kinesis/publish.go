@@ -58,9 +58,12 @@ var publishCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatal(err)
 		}
-
+		endpointURL, err := cmd.Flags().GetString("endpoint")
+		if err != nil {
+			logrus.Fatal(err)
+		}
 		customCreds := credentials.NewStaticCredentials(accessKey, secretKey, "")
-		s := session.New(&aws.Config{Region: aws.String(region), Credentials: customCreds})
+		s := session.New(&aws.Config{Region: aws.String(region), Endpoint: aws.String(endpointURL), Credentials: customCreds})
 		kc := kinesis.New(s)
 		_, err = kc.PutRecord(&kinesis.PutRecordInput{
 			Data:         []byte(message),
@@ -79,6 +82,7 @@ func init() {
 	publishCmd.Flags().StringP("message", "", "", "Specify message to be published")
 	publishCmd.Flags().StringP("aws_access_key_id", "", "", "AWS access key")
 	publishCmd.Flags().StringP("aws_secret_access_key", "", "", "AWS secret key")
+	publishCmd.Flags().StringP("endpoint", "", "", "Override AWS's default service URL with the given URL")
 	publishCmd.MarkFlagRequired("stream")
 	publishCmd.MarkFlagRequired("aws-region")
 	publishCmd.MarkFlagRequired("partition-key")
